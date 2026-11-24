@@ -29,5 +29,32 @@ pipeline {
                 }
             }
         }
+
+        stage('Docker Build') {
+            steps {
+                sh '''
+                    docker build -t leave-service-2024sl70028:latest .
+                '''
+            }
+        }
+
+        stage('Staging Deployment') {
+            steps {
+                sh '''
+                    docker rm -f leave-service-staging || true
+
+                    docker run -d \
+                    --name leave-service-staging \
+                    -p 8085:8080 \
+                    -e APP_ENV=staging \
+                    leave-service-2024sl70028:latest
+
+                    sleep 5
+
+                    curl --fail http://localhost:8085/
+                '''
+            }
+        }
     }
 }
+
